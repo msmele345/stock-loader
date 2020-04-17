@@ -1,0 +1,18 @@
+spring:
+  cloud:
+    stream:
+      default-binder: rabbit
+      rabbit: #connection part
+        binder:
+          admin-addresses: localhost:5672
+
+      bindings: #channels set in binder
+        input: #channel name
+          binder: rabbit
+#          group: stocks
+          destination: stocks-exchange #topic or exchange
+
+        errorQueue:
+          binder: rabbit
+          destination: errors
+
