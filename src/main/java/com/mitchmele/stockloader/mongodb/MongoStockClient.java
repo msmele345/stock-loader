@@ -1,6 +1,8 @@
 package com.mitchmele.stockloader.mongodb;
 
 import com.mitchmele.stockloader.model.Stock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.List;
 public class MongoStockClient {
 
     StockRepository stockRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(MongoStockClient.class);
 
     public MongoStockClient(StockRepository stockRepository) {
         this.stockRepository = stockRepository;
@@ -25,6 +29,7 @@ public class MongoStockClient {
     public void insertStock(Stock stock) throws IOException {
         try {
             stockRepository.insert(stock);
+            logSuccess(stock);
         } catch (Exception e) {
             String msg = String.format("Stock: %s has an exception on insert with message %s", stock, e.getLocalizedMessage());
             throw new IOException(msg);
@@ -39,5 +44,10 @@ public class MongoStockClient {
             throw new IOException("Mongo Error: " + e.getLocalizedMessage());
         }
         return stocks;
+    }
+
+    private void logSuccess(Stock stock) {
+        String msg = String.format("Stock: %s has been successfully written to Mongo", stock.getSymbol());
+        logger.info(msg);
     }
 }

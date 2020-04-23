@@ -1,13 +1,13 @@
 package com.mitchmele.stockloader.mongodb;
 
 import com.mongodb.MongoClient;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories
-public class MongoDbConfig {
+@EnableMongoRepositories("com.mitchmele.*")
+public class MongoDbConfig extends AbstractMongoConfiguration {
 
 //    @Value("${spring.data.mongodb.uri}")
 //    String mongoConnectionUri;
@@ -22,10 +22,20 @@ public class MongoDbConfig {
 //        return new MongoTemplate(mongoDbFactory());
 //    }
 
-    @Bean
+//    @Bean
+//    public MongoClient mongoClient() {
+//        MongoClient mongoClient = new MongoClient("localhost", 27017);
+//        mongoClient.getDatabase("stocks");
+//        return mongoClient;
+//    }
+
+    @Override
+    protected String getDatabaseName() {
+        return "stocks";
+    }
+
+    @Override
     public MongoClient mongoClient() {
-        MongoClient mongoClient = new MongoClient("localhost", 27017);
-        mongoClient.getDatabase("stocks");
-        return mongoClient;
+        return new MongoClient("localhost", 27017);
     }
 }

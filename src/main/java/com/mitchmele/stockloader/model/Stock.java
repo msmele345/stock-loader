@@ -3,10 +3,14 @@ package com.mitchmele.stockloader.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
+@Document(collection = "stocks")
 public class Stock {
 
+    @Id
     String symbol;
     Double bid;
     Double offer;

@@ -9,13 +9,21 @@ import org.springframework.cloud.stream.messaging.Sink;
 interface StocksBinder {
 
     String ERRORS  = "errors";
+//    String SINGLE_STOCK_OUTPUT  = "singleOutput";
+//    String BATCH_STOCKS_OUTPUT  = "batchOutput";
 
 
     @Input(Sink.INPUT)
     SubscribableChannel input();
 
-//
+
     @Output(ERRORS)
     MessageChannel errorQueue();
+
+//    @Output(SINGLE_STOCK_OUTPUT)
+//    SubscribableChannel singleOutput();
+//
+//    @Output(BATCH_STOCKS_OUTPUT)
+//    SubscribableChannel batchOutput();
 
 }

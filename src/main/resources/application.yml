@@ -12,7 +12,11 @@ spring:
 #          group: stocks
           destination: stocks-exchange #topic or exchange
 
-        errorQueue:
-          binder: rabbit
-          destination: errors
+#        singleOutput:
+#          binder: rabbit
+#          destination: single-stock-exchange
+#
+#        batchInput:
+#          binder: rabbit
+#          destination: batch-stock-exchange
 

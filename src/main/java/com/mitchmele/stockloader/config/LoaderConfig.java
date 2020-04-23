@@ -1,6 +1,8 @@
 package com.mitchmele.stockloader.config;
 
 import com.mitchmele.stockloader.services.JsonToStocksTransformer;
+import com.mitchmele.stockloader.services.StockHandler;
+import com.mitchmele.stockloader.services.StockTransformer;
 import com.mitchmele.stockloader.services.StocksRouter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.stream.annotation.EnableBinding;
@@ -24,37 +26,59 @@ public class LoaderConfig {
         return new DirectChannel();
     }
 
-    //setup transformer for singles
-    //setup message handler that writes to mongo for singles
-    //fine tune error flow
+    @Bean
+    @Qualifier("singleOutput")
+    DirectChannel singleOutput() {
+        return new DirectChannel();
+    }
 
     @Bean
-    IntegrationFlow stocksGatewayFlow(
+    @Qualifier("batchOutput")
+    DirectChannel batchOutput() {
+        return new DirectChannel();
+    }
+
+
+    //MAIN TRACK:
+    //Setup producer to bind queue/exchange.
+    // This will prevent me from having to create queues to keep track of ALL messages
+    //ADD integration tests and re-evaluate config (with creds?)
+    //add error advice with error queue
+
+    @Bean
+    IntegrationFlow inboundGatewayFlow(
             StocksRouter router
     ) {
         return IntegrationFlows.from(Sink.INPUT)
-                .log(message -> message.getHeaders().toString())
+                .log(message -> "ROUTER GOT MESSAGE WITH HEADERS: " + message.getHeaders().toString())
                 .route(router)
                 .get();
     }
 
     @Bean
-    IntegrationFlow singleStocksFlow() {
+    IntegrationFlow singleStocksFlow(
+            StockTransformer transformer,
+            StockHandler handler
+    ) {
         return IntegrationFlows.from("singleStocks")
-                .log(message -> "PAYLOAD SINGLE" + message.getPayload().toString())
+                .log(message -> "PAYLOAD SINGLE BEFORE: " + message.getPayload().toString())
+                .transform(transformer)
+                .log(message -> "PAYLOAD SINGLE AFTER: " + message.getPayload().toString())
+                .handle(handler)
+//                .channel(StocksBinder.SINGLE_STOCK_OUTPUT) //for errors later
                 .get();
     }
-
 
     @Bean
     IntegrationFlow batchStocksFlow(
             JsonToStocksTransformer jsonToStocksTransformer
     ) {
         return IntegrationFlows.from("batchStocks")
-                .log(message ->  "PAYLOAD BATCH" + message.getPayload().toString())
+                .log(message ->  "PAYLOAD BATCH: " + message.getPayload().toString())
 //                .transform(Transformers.toJson())
                 .transform(jsonToStocksTransformer)
-                .log(message ->  "MESSAGE AFTER" + message.getPayload().toString())
+                .log(message ->  "MESSAGE AFTER: " + message.getPayload().toString())
+//                .channel(StocksBinder.BATCH_STOCKS_OUTPUT) //for errors later
                 .get();
     }
 

@@ -24,7 +24,7 @@ services:
     hostname: mongodb-2.vnet
     restart: always
     ports:
-      - 27017:27017
+      - 27018:27018
 
 #  kafka-1:
 #    depends_on:
