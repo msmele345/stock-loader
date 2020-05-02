@@ -1,7 +1,7 @@
 package com.mitchmele.stockloader.services;
 
 import com.mitchmele.stockloader.model.Stock;
-import com.mitchmele.stockloader.mongodb.MongoStockClient;
+import com.mitchmele.stockloader.mongodb.MongoClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.doThrow;
 class StockProcessorTest {
 
     @Mock
-    MongoStockClient mockMongoClient;
+    MongoClient mockMongoClient;
 
     @InjectMocks
     StockProcessor subject;

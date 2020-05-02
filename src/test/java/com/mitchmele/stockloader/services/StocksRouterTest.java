@@ -11,11 +11,11 @@ class StocksRouterTest {
 
     @Test
     public void route_shouldRouteMessageToSingleStockQueue_ifHeadersContainSingle() {
-        String expectedRoute = "singleStocks";
+        String expectedRoute = "stocksQueue";
 
         Message<?> incomingMessage = MessageBuilder
                 .withPayload("some payload")
-                .setHeader("STOCK_TYPE", "single")
+                .setHeader("Type", "STOCK")
                 .build();
 
         String actual = subject.route(incomingMessage);
@@ -23,13 +23,28 @@ class StocksRouterTest {
     }
 
     @Test
-    public void route_shouldRouteMessageToBatchStocksQueue_ifHeadersContainBatch() {
+    public void route_shouldRouteBidssToBidsQueue_ifHeadersContainBidType() {
 
-        String expectedRoute = "batchStocks";
+        String expectedRoute = "bidsQueue";
 
         Message<?> incomingMessage = MessageBuilder
                 .withPayload("some batch payload")
-                .setHeader("STOCK_TYPE", "batch")
+                .setHeader("Type", "BID")
+                .build();
+
+        String actual = subject.route(incomingMessage);
+
+        assertThat(actual).isEqualTo(expectedRoute);
+    }
+
+    @Test
+    public void route_shouldRouteAsksToAsksQueue_ifHeadersContainAskType() {
+
+        String expectedRoute = "asksQueue";
+
+        Message<?> incomingMessage = MessageBuilder
+                .withPayload("some batch payload")
+                .setHeader("Type", "ASK")
                 .build();
 
         String actual = subject.route(incomingMessage);

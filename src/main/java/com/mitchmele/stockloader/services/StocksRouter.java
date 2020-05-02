@@ -7,19 +7,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class StocksRouter {
 
-    final static String singleStock = "singleStocks";
-    final static String batchStocks = "batchStocks";
+    final static String asks = "asksQueue";
+    final static String bids = "bidsQueue";
+    final static String stocks = "stocksQueue";
     final static String errors = "errorQueue";
 
     @Router
     public String route(Message<?> message) {
-        String stockType = (String) message.getHeaders().get("STOCK_TYPE");
-        if (stockType != null) {
-            switch (stockType) {
-                case "single":
-                    return singleStock;
-                case "batch":
-                    return batchStocks;
+        String entityType = (String) message.getHeaders().get("Type");
+        if (entityType != null) {
+            switch (entityType) {
+                case "BID":
+                    return bids;
+                case "ASK":
+                    return asks;
+                case "STOCK":
+                    return stocks;
                 default:
                     return errors;
             }

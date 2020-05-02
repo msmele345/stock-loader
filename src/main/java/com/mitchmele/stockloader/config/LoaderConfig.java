@@ -1,19 +1,26 @@
 package com.mitchmele.stockloader.config;
 
-import com.mitchmele.stockloader.services.JsonToStocksTransformer;
-import com.mitchmele.stockloader.services.StockHandler;
-import com.mitchmele.stockloader.services.StockTransformer;
-import com.mitchmele.stockloader.services.StocksRouter;
+import com.mitchmele.stockloader.services.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.messaging.Sink;
+import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
+import org.springframework.integration.core.MessagingTemplate;
+import org.springframework.integration.dsl.ConsumerEndpointSpec;
+import org.springframework.integration.dsl.GenericEndpointSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
+
+import java.io.IOException;
 
 @Configuration
 @EnableIntegration
@@ -22,28 +29,21 @@ import org.springframework.integration.dsl.IntegrationFlows;
 public class LoaderConfig {
 
     @Bean
-    DirectChannel errorQueue() {
+    @Qualifier("errorQueue")
+    MessageChannel errorQueue() {
         return new DirectChannel();
     }
 
     @Bean
-    @Qualifier("singleOutput")
-    DirectChannel singleOutput() {
+    @Qualifier("outputErrors")
+    MessageChannel outputErrors() {
         return new DirectChannel();
     }
 
     @Bean
-    @Qualifier("batchOutput")
-    DirectChannel batchOutput() {
-        return new DirectChannel();
+    MessagingTemplate messagingTemplate() {
+        return new MessagingTemplate();
     }
-
-
-    //MAIN TRACK:
-    //Setup producer to bind queue/exchange.
-    // This will prevent me from having to create queues to keep track of ALL messages
-    //ADD integration tests and re-evaluate config (with creds?)
-    //add error advice with error queue
 
     @Bean
     IntegrationFlow inboundGatewayFlow(
@@ -56,29 +56,41 @@ public class LoaderConfig {
     }
 
     @Bean
-    IntegrationFlow singleStocksFlow(
+    IntegrationFlow stockProcessingFlow(
             StockTransformer transformer,
-            StockHandler handler
+            StockHandler handler,
+            MessageErrorAdvice messageErrorAdvice
     ) {
-        return IntegrationFlows.from("singleStocks")
-                .log(message -> "PAYLOAD SINGLE BEFORE: " + message.getPayload().toString())
-                .transform(transformer)
-                .log(message -> "PAYLOAD SINGLE AFTER: " + message.getPayload().toString())
+        return IntegrationFlows.from("stocksQueue")
+                .transform(transformer, (e) -> e.advice(messageErrorAdvice).requiresReply(false))
+                .log(message -> "STOCK PAYLOAD SINGLE AFTER: " + message.getPayload().toString())
                 .handle(handler)
-//                .channel(StocksBinder.SINGLE_STOCK_OUTPUT) //for errors later
                 .get();
     }
 
     @Bean
-    IntegrationFlow batchStocksFlow(
-            JsonToStocksTransformer jsonToStocksTransformer
+    IntegrationFlow bidProcessingFlow(
+            StockTransformer transformer,
+            StockHandler handler,
+            MessageErrorAdvice messageErrorAdvice
     ) {
-        return IntegrationFlows.from("batchStocks")
-                .log(message ->  "PAYLOAD BATCH: " + message.getPayload().toString())
-//                .transform(Transformers.toJson())
-                .transform(jsonToStocksTransformer)
-                .log(message ->  "MESSAGE AFTER: " + message.getPayload().toString())
-//                .channel(StocksBinder.BATCH_STOCKS_OUTPUT) //for errors later
+        return IntegrationFlows.from("bidsQueue")
+                .transform(transformer, (e) -> e.advice(messageErrorAdvice).requiresReply(false))
+                .log(message -> "BID PAYLOAD SINGLE AFTER: " + message.getPayload().toString())
+                .handle(handler)
+                .get();
+    }
+
+    @Bean
+    IntegrationFlow askProcessingFlow(
+            StockTransformer transformer,
+            StockHandler handler,
+            MessageErrorAdvice messageErrorAdvice
+    ) {
+        return IntegrationFlows.from("asksQueue")
+                .transform(transformer, (e) -> e.advice(messageErrorAdvice).requiresReply(false))
+                .log(message -> "ASK PAYLOAD SINGLE AFTER: " + message.getPayload().toString())
+                .handle(handler)
                 .get();
     }
 
@@ -86,6 +98,7 @@ public class LoaderConfig {
     IntegrationFlow errorsFlow() {
         return IntegrationFlows.from("errorQueue")
                 .log(message -> "RECEIVED ERROR" + message.getPayload().toString())
+                .channel(Source.OUTPUT)
                 .get();
     }
 }

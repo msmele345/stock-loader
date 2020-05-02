@@ -9,14 +9,10 @@ spring:
       bindings: #channels set in binder
         input: #channel name
           binder: rabbit
-#          group: stocks
           destination: stocks-exchange #topic or exchange
 
-#        singleOutput:
-#          binder: rabbit
-#          destination: single-stock-exchange
-#
-#        batchInput:
-#          binder: rabbit
-#          destination: batch-stock-exchange
+        output:
+          binder: rabbit
+          destination: errors
+
 
