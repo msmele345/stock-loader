@@ -1,6 +1,9 @@
 package com.mitchmele.stockloader.config;
 
-import com.mitchmele.stockloader.services.*;
+import com.mitchmele.stockloader.services.MessageErrorAdvice;
+import com.mitchmele.stockloader.services.StockHandler;
+import com.mitchmele.stockloader.services.StockTransformer;
+import com.mitchmele.stockloader.services.StocksRouter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.messaging.Sink;
@@ -11,16 +14,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessagingTemplate;
-import org.springframework.integration.dsl.ConsumerEndpointSpec;
-import org.springframework.integration.dsl.GenericEndpointSpec;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessagingException;
-
-import java.io.IOException;
 
 @Configuration
 @EnableIntegration
@@ -33,10 +29,9 @@ public class LoaderConfig {
     MessageChannel errorQueue() {
         return new DirectChannel();
     }
-
     @Bean
-    @Qualifier("outputErrors")
-    MessageChannel outputErrors() {
+    @Qualifier("output")
+    MessageChannel output() {
         return new DirectChannel();
     }
 

@@ -4,10 +4,7 @@ import com.mitchmele.stockloader.model.Ask;
 import com.mitchmele.stockloader.model.Bid;
 import com.mitchmele.stockloader.model.Stock;
 import com.mongodb.MongoClient;
-import org.aspectj.lang.annotation.After;
-import org.junit.Before;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +14,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,7 +50,7 @@ class StockRepositoryTest {
 
     @AfterEach
     void tearDown() {
-//        stockRepository.deleteAll();
+        stockRepository.deleteAll();
     }
 
     @Test
@@ -83,5 +84,34 @@ class StockRepositoryTest {
 
         assertThat(actual).isNotNull();
         assertThat(actual).isEqualTo(inputAsk);
+    }
+
+//   Ask[] asks = {ask1, ask2, ask3};
+    @Test
+    public void fetchBySymbol_success_shouldFetchAllRecordsBySymbol() {
+        Bid bid1 = new Bid("TTY", 4.50);
+        Bid bid2 = new Bid("VVB", 10.50);
+        Bid bid3 = new Bid("QQW", 100.90);
+
+        List<Bid> bids = Arrays.asList(bid1, bid2, bid3);
+
+        Ask ask1 = new Ask("TTY", 4.75);
+        Ask ask2 = new Ask("VVB", 10.75);
+        Ask ask3 = new Ask("QQW", 101.00);
+
+        List<Ask> asks = Arrays.asList(ask1, ask2, ask3);
+
+        stockRepository.insert(bids);
+        stockRepository.insert(asks);
+
+        stockRepository.insert(new Ask("ASK", 80.00));
+
+//        org.springframework.data.mongodb.core.query.Query query = new Query();
+//        query.addCriteria(Criteria.where("symbol").is("QQW"));
+
+        List<Bid> actual = stockRepository.findBySymbolIgnoreCase("TTY");
+
+        List<StockEntity> expectedResult = Collections.singletonList(bid1);
+        assertThat(actual).isEqualTo(expectedResult);
     }
 }

@@ -2,7 +2,6 @@ package com.mitchmele.stockloader.mongodb;
 
 import com.mitchmele.stockloader.model.Ask;
 import com.mitchmele.stockloader.model.Bid;
-import com.mitchmele.stockloader.model.Stock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +14,7 @@ import static org.mockito.Mockito.*;
 class MongoClientTest {
 
     MongoClient subject;
+//    MongoTemplate mongoTemplate = mock(MongoTemplate.class);
     StockRepository mockRepo = mock(StockRepository.class);
 
     @BeforeEach
@@ -64,4 +64,8 @@ class MongoClientTest {
                 .isInstanceOf(IOException.class)
                 .hasMessage("Ask: Ask(type=null, symbol=null, askPrice=null, ENTITY_TYPE=ASK) has an exception on insert with message: bad news");
     }
+
+
+    @Test//if the template is used
+    public void findBySymbol_success_shouldCallMongoTemplate() { }
 }

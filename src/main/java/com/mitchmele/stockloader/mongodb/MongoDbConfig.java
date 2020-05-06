@@ -3,6 +3,7 @@ package com.mitchmele.stockloader.mongodb;
 import com.mongodb.MongoClient;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
@@ -29,9 +30,15 @@ public class MongoDbConfig extends AbstractMongoConfiguration {
 //        return mongoClient;
 //    }
 
+
+    @Override
+    public MongoTemplate mongoTemplate() {
+        return new MongoTemplate(mongoClient(), "tradeRepo");
+    }
+
     @Override
     protected String getDatabaseName() {
-        return "stocks";
+        return "tradeRepo";
     }
 
     @Override
