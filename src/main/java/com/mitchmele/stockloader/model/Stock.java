@@ -45,6 +45,11 @@ public class Stock implements StockEntity {
         return symbol;
     }
 
+    @Override
+    public Double getPrice() {
+        return this.lastPrice;
+    }
+
     public Double getBid() {
         return bid;
     }

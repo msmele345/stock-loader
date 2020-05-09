@@ -3,6 +3,7 @@ package com.mitchmele.stockloader.services;
 import com.mitchmele.stockloader.model.Ask;
 import com.mitchmele.stockloader.model.Bid;
 import com.mitchmele.stockloader.model.Stock;
+import com.mitchmele.stockloader.model.Trade;
 import com.mitchmele.stockloader.mongodb.MongoClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,11 +12,11 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class StockProcessorTest {
 
@@ -26,7 +27,7 @@ class StockProcessorTest {
     StockProcessor subject;
 
     @Captor
-    ArgumentCaptor<Stock> captor;
+    ArgumentCaptor<Trade> captor;
 
     @BeforeEach
     void setUp() {
@@ -36,18 +37,17 @@ class StockProcessorTest {
 
     @Test
     public void process_shouldCallTheMongoSaveMethod_providedIncomingValidMessage() throws IOException {
-        Stock payload = new Stock();
+        Trade payload = new Trade("ABC", 25.00, LocalDate.now());
         Message<?> incomingMessage = MessageBuilder
                 .withPayload(payload)
-                .setHeader("Type", "STOCK")
                 .build();
 
         subject.process(incomingMessage);
-        Mockito.verify(mockMongoClient).insertStock(captor.capture());
+        Mockito.verify(mockMongoClient).insertEntity(captor.capture());
     }
 
     @Test
-    public void process_shouldCallMongoInsertBid_providedMessageWithTypeBid() throws IOException {
+    public void process_shouldCallMongoInsert_providedMessageWithTypeBid() throws IOException {
         Bid payload = new Bid("ABC", 23.50);
 
         Message<?> incomingMessage = MessageBuilder
@@ -59,11 +59,11 @@ class StockProcessorTest {
 
         ArgumentCaptor<Bid> bidCaptor = ArgumentCaptor.forClass(Bid.class);
 
-        verify(mockMongoClient).insertBid(bidCaptor.capture());
+        verify(mockMongoClient).insertEntity(bidCaptor.capture());
     }
 
     @Test
-    public void process_shouldCallMongoInsertAsk_providedMessageWithTypeAsk() throws IOException {
+    public void process_shouldCallMongoInsert_providedMessageWithTypeAsk() throws IOException {
 
         Ask payload = new Ask("ABC", 23.75);
 
@@ -75,20 +75,26 @@ class StockProcessorTest {
         subject.process(incomingMessage);
         ArgumentCaptor<Ask> askCaptor = ArgumentCaptor.forClass(Ask.class);
 
-        verify(mockMongoClient).insertAsk(askCaptor.capture());
+        verify(mockMongoClient).insertEntity(askCaptor.capture());
     }
 
     @Test
     public void process_failure_shouldThrowIOExceptionIfMongoInsertFails() throws IOException {
+        Trade payload = new Trade("ABC", 25.00, LocalDate.now());
         Message<?> incomingMessage = MessageBuilder
-                .withPayload(new Stock())
-                .setHeader("Type", "STOCK")
+                .withPayload(payload)
                 .build();
         //use doThrow or doAnswer in front when mocking void methods
-        doThrow(new RuntimeException("something bad")).when(mockMongoClient).insertStock(any());
+        doThrow(new RuntimeException("something bad")).when(mockMongoClient).insertEntity(any());
 
         assertThatThrownBy(() -> subject.process(incomingMessage))
                 .isInstanceOf(IOException.class)
                 .hasMessage("something bad");
     }
 }
+/* DO ANSWER EX
+      doAnswer(e -> {
+            System.out.println("Answer");
+            throw new RuntimeException("bad again");
+        }).when(mockMongoClient).insertEntity(any());
+ */

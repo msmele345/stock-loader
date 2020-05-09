@@ -1,13 +1,9 @@
 package com.mitchmele.stockloader.mongodb;
 
-import com.mitchmele.stockloader.model.Ask;
-import com.mitchmele.stockloader.model.Bid;
-import com.mitchmele.stockloader.model.Stock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
-import java.util.List;
 
 @Service
 public class MongoClient {
@@ -20,53 +16,24 @@ public class MongoClient {
         this.stockRepository = stockRepository;
     }
 
-
-    public void insertStock(Stock stock) throws IOException {
+    public StockEntity insertEntity(StockEntity incomingEntity) throws IOException {
         try {
-            stockRepository.insert(stock);
-            logSuccess(stock);
+            StockEntity newEntity = stockRepository.insert(incomingEntity);
+            logEntitySuccess(newEntity);
+            return newEntity;
         } catch (Exception e) {
-            String msg = String.format("Stock: %s has an exception on insert with message %s", stock, e.getLocalizedMessage());
+            String msg = String.format("Entity: %s threw an exception on insert with message: %s", incomingEntity, e.getLocalizedMessage());
             throw new IOException(msg);
         }
     }
 
-    public Bid insertBid(Bid bid) throws IOException {
-        try {
-            Bid bidInsert = stockRepository.insert(bid);
-            logBidSuccess(bidInsert);
-            return bidInsert;
-        } catch (Exception e) {
-            String msg = String.format("Bid: %s has an exception on insert with message: %s", bid, e.getLocalizedMessage());
-            throw new IOException(msg);
-        }
-    }
-
-    public Ask insertAsk(Ask incomingAsk) throws IOException {
-        try {
-            Ask askInsert = stockRepository.insert(incomingAsk);
-            logAskSuccess(askInsert);
-            return askInsert;
-        } catch (Exception e) {
-            String msg = String.format("Ask: %s has an exception on insert with message: %s", incomingAsk, e.getLocalizedMessage());
-            throw new IOException(msg);
-        }
-    }
-
-    private void logSuccess(Stock stock) {
-        String msg = String.format("Stock: %s has been successfully written to Mongo", stock.getSymbol());
+    private void logEntitySuccess(StockEntity entity) {
+        String type = getTypePretty(entity.getType());
+        String msg = String.format("Stock Entity Type: %s with Symbol: %s has been successfully written to Mongo", type, entity.getSymbol());
         logger.info(msg);
     }
 
-    private void logBidSuccess(Bid bid) {
-        String msg = String.format("Bid: %s has been successfully written to Mongo", bid.getSymbol());
-        logger.info(msg);
+    protected String getTypePretty(String inputString) {
+        return inputString.substring(inputString.length() - 3);
     }
-
-    private void logAskSuccess(Ask ask) {
-        String msg = String.format("Ask: %s has been successfully written to Mongo", ask.getSymbol());
-        logger.info(msg);
-    }
-
-
 }

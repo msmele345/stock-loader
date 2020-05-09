@@ -1,9 +1,8 @@
 package com.mitchmele.stockloader.config;
 
-import com.mitchmele.stockloader.services.MessageErrorAdvice;
-import com.mitchmele.stockloader.services.StockHandler;
-import com.mitchmele.stockloader.services.StockTransformer;
-import com.mitchmele.stockloader.services.StocksRouter;
+import com.mitchmele.stockloader.model.Trade;
+import com.mitchmele.stockloader.services.*;
+import com.rabbitmq.client.Delivery;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.messaging.Sink;
@@ -11,12 +10,18 @@ import org.springframework.cloud.stream.messaging.Source;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.aggregator.CorrelationStrategy;
+import org.springframework.integration.aggregator.ReleaseStrategy;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessagingTemplate;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.store.MessageGroup;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableIntegration
@@ -29,6 +34,7 @@ public class LoaderConfig {
     MessageChannel errorQueue() {
         return new DirectChannel();
     }
+
     @Bean
     @Qualifier("output")
     MessageChannel output() {
@@ -40,26 +46,68 @@ public class LoaderConfig {
         return new MessagingTemplate();
     }
 
+
+//    @Bean
+//    IntegrationFlow inboundGatewayFlow(
+//            StocksRouter router
+//    ) {
+//        return IntegrationFlows.from(Sink.INPUT)
+//                .log(message -> "ROUTER GOT MESSAGE WITH HEADERS: " + message.getHeaders().toString())
+//                .route(router)
+//                .get();
+//    }
+
     @Bean
-    IntegrationFlow inboundGatewayFlow(
-            StocksRouter router
+    ReleaseStrategy releaseStrategy() {
+        return new ReleaseStrategy() {
+            @Override
+            public boolean canRelease(MessageGroup group) {
+                return group.getMessages().size() == 2;
+            }
+        };
+    }
+
+    @Bean
+    CorrelationStrategy correlationStrategy() {
+        return new CorrelationStrategy() {
+            @Override
+            public Object getCorrelationKey(Message<?> message) {
+                //get symbol to group by SYMBOL and bring in trade aggregator to check/insert trade?
+                return message.getHeaders().get("Symbol");
+            }
+        };
+    }
+
+
+    @Bean
+    IntegrationFlow transactionFlow(
+            StockTransformer transformer,
+            AggregatorProcessor processor,
+            MessageErrorAdvice messageErrorAdvice
     ) {
         return IntegrationFlows.from(Sink.INPUT)
-                .log(message -> "ROUTER GOT MESSAGE WITH HEADERS: " + message.getHeaders().toString())
-                .route(router)
+                .transform(transformer,
+                        (e) -> e.advice(messageErrorAdvice).requiresReply(false))
+                .enrichHeaders(h ->
+                        h.headerExpression("Symbol", "payload.symbol.toString()"))
+                .aggregate(e ->
+                        e.outputProcessor(processor)
+                                .releaseStrategy(releaseStrategy())
+                                .correlationStrategy(correlationStrategy())
+                )
+                .log(message -> "AGGREGATE PAYLOAD AFTER: " + message.getPayload().toString())
+                .channel("tradeProcessing")
                 .get();
     }
 
     @Bean
-    IntegrationFlow stockProcessingFlow(
-            StockTransformer transformer,
+    IntegrationFlow tradeProcessingFlow(
             StockHandler handler,
             MessageErrorAdvice messageErrorAdvice
     ) {
-        return IntegrationFlows.from("stocksQueue")
-                .transform(transformer, (e) -> e.advice(messageErrorAdvice).requiresReply(false))
-                .log(message -> "STOCK PAYLOAD SINGLE AFTER: " + message.getPayload().toString())
-                .handle(handler)
+        return IntegrationFlows.from("tradeProcessing")
+                .log(message -> "RECEIVED TRADE: " + message.getPayload().toString())
+                .handle(handler, e -> e.advice(messageErrorAdvice).requiresReply(false))
                 .get();
     }
 
@@ -93,7 +141,7 @@ public class LoaderConfig {
     IntegrationFlow errorsFlow() {
         return IntegrationFlows.from("errorQueue")
                 .log(message -> "RECEIVED ERROR" + message.getPayload().toString())
-                .channel(Source.OUTPUT)
+                .channel(StocksBinder.OUTPUT)
                 .get();
     }
 }

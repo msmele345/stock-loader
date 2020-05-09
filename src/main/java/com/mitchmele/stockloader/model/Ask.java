@@ -21,4 +21,13 @@ public class Ask implements StockEntity {
         this.symbol = symbol;
         this.askPrice = askPrice;
     }
+
+    public String getType() {
+        return ENTITY_TYPE;
+    }
+
+    @Override
+    public Double getPrice() {
+        return this.askPrice;
+    }
 }

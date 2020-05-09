@@ -14,11 +14,20 @@ public class Bid implements StockEntity {
     String symbol;
     Double bidPrice;
 
-    final static String ENTITY_TYPE = "BID";
+    final String ENTITY_TYPE = "BID";
 
     public Bid(String symbol, Double bidPrice) {
         this.type = ENTITY_TYPE;
         this.symbol = symbol;
         this.bidPrice = bidPrice;
+    }
+
+    public String getType() {
+        return ENTITY_TYPE;
+    }
+
+    @Override
+    public Double getPrice() {
+        return this.bidPrice;
     }
 }

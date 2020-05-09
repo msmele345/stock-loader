@@ -34,7 +34,7 @@ public class MessageErrorAdvice extends AbstractRequestHandlerAdvice {
                         .copyHeadersIfAbsent(message.getHeaders())
                         .setHeader("Transform ErrorMessage", ex.getLocalizedMessage())
                         .build();
-                messagingTemplate.send("errorQueue", errorMessage);
+                messagingTemplate.send(errorQueue, errorMessage);
             } else { //can build out specific errorMessages to specific error queues later
                 Message<?> defaultErrorMessage = MessageBuilder
                         .withPayload(message.getPayload())
@@ -42,7 +42,7 @@ public class MessageErrorAdvice extends AbstractRequestHandlerAdvice {
                         .setHeader("DefaultErrorMessage", ex.getLocalizedMessage())
                         .build();
 
-                messagingTemplate.send("errorQueue", defaultErrorMessage);
+                messagingTemplate.send(errorQueue, defaultErrorMessage);
             }
         }
         return null;

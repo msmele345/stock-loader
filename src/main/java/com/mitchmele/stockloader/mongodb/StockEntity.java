@@ -3,13 +3,15 @@ package com.mitchmele.stockloader.mongodb;
 public interface StockEntity {
     String getSymbol();
     String getType();
+    Double getPrice();
 }
 
 
 //Regular Track
-//look at aggregator to group bids/offers of same symbol
-//create handler that accepts both bids and offers and has business logic that creates the trade (same symbol) pojo and stores it in mongo
+//test on multiple messages with multiple same bids and offers
+//Figure out how to manage re-sending bids/offers in groups that dont match in price.
+
 
 //ERROR Flow
 //send stock with null value to debug
-//re-visit bindings
+//re-visit bindings!!!
