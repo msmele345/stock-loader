@@ -10,7 +10,6 @@ import org.springframework.messaging.MessagingException;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.mock;
 
 class StockHandlerTest {
 
-    StockProcessor mockProcessor = mock(StockProcessor.class);
+    MongoStockEntityService mockProcessor = mock(MongoStockEntityService.class);
 
     StockHandler subject;
 

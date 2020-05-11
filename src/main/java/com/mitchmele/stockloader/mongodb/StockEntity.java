@@ -5,13 +5,11 @@ public interface StockEntity {
     String getType();
     Double getPrice();
 }
-
-
 //Regular Track
-//test on multiple messages with multiple same bids and offers
 //Figure out how to manage re-sending bids/offers in groups that dont match in price.
+//Correlation strategy with symbol and price?
+//test on multiple messages with multiple same bids and offers
 
-
-//ERROR Flow
-//send stock with null value to debug
-//re-visit bindings!!!
+//ERROR
+//DLQ and retries
+//set max delivery attempts in config

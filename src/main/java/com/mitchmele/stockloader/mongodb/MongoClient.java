@@ -3,6 +3,7 @@ package com.mitchmele.stockloader.mongodb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import java.io.IOException;
 
 @Service
@@ -29,11 +30,11 @@ public class MongoClient {
 
     private void logEntitySuccess(StockEntity entity) {
         String type = getTypePretty(entity.getType());
-        String msg = String.format("Stock Entity Type: %s with Symbol: %s has been successfully written to Mongo", type, entity.getSymbol());
+        String msg = String.format("Stock Entity Type: %s with Symbol: %S has been successfully written to Mongo", type, entity.getSymbol());
         logger.info(msg);
     }
 
     protected String getTypePretty(String inputString) {
-        return inputString.substring(inputString.length() - 3);
+        return inputString.substring(inputString.length() - 5);
     }
 }

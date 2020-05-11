@@ -3,6 +3,7 @@ package com.mitchmele.stockloader.model;
 import com.mitchmele.stockloader.mongodb.StockEntity;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDate;
 
 @NoArgsConstructor
@@ -14,7 +15,7 @@ public class Trade implements StockEntity {
     public LocalDate timeOfTrade;
     public String exchange;
 
-    final String DEFAULT_EXCHANGE = "NASDAQ";
+    final static String DEFAULT_EXCHANGE = "NASDAQ";
     final String ENTITY_TYPE = "TRADE";
 
 

@@ -10,18 +10,18 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 @Service
-public class StockProcessor {
+public class MongoStockEntityService {
 
-    private static final Logger logger = LoggerFactory.getLogger(StockProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MongoStockEntityService.class);
 
     MongoClient mongoClient;
 
-    public StockProcessor(MongoClient mongoClient) {
+    public MongoStockEntityService(MongoClient mongoClient) {
         this.mongoClient = mongoClient;
     }
 
     public void process(Message<?> message) throws IOException {
-        logger.info("PROCESSOR RECEIVED MESSAGE WITH PAYLOAD: " + message.getPayload());
+        logger.info("MONGO_ENTITY_SERVICE RECEIVED MESSAGE WITH PAYLOAD: " + message.getPayload());
 
         try {
             StockEntity payload = (StockEntity) message.getPayload();
@@ -29,17 +29,5 @@ public class StockProcessor {
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
-    }
-}
-
-enum StockEntityType {
-    BID("BID"),
-    ASK("ASK"),
-    STOCK("STOCK");
-
-    public final String value;
-
-    private StockEntityType(String value) {
-        this.value = value;
     }
 }

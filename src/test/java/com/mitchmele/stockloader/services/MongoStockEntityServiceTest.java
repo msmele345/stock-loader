@@ -2,7 +2,6 @@ package com.mitchmele.stockloader.services;
 
 import com.mitchmele.stockloader.model.Ask;
 import com.mitchmele.stockloader.model.Bid;
-import com.mitchmele.stockloader.model.Stock;
 import com.mitchmele.stockloader.model.Trade;
 import com.mitchmele.stockloader.mongodb.MongoClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,15 +15,16 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
-class StockProcessorTest {
+class MongoStockEntityServiceTest {
 
     @Mock
     MongoClient mockMongoClient;
 
     @InjectMocks
-    StockProcessor subject;
+    MongoStockEntityService subject;
 
     @Captor
     ArgumentCaptor<Trade> captor;

@@ -3,6 +3,7 @@ package com.mitchmele.stockloader.model;
 import com.mitchmele.stockloader.mongodb.StockEntity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @NoArgsConstructor
@@ -11,7 +12,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Bid implements StockEntity {
 
     String type;
+    @NonNull
     String symbol;
+    @NonNull
     Double bidPrice;
 
     final String ENTITY_TYPE = "BID";

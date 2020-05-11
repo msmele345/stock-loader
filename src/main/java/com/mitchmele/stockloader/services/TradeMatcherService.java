@@ -2,7 +2,6 @@ package com.mitchmele.stockloader.services;
 
 import com.mitchmele.stockloader.model.Trade;
 import com.mitchmele.stockloader.mongodb.StockEntity;
-import org.springframework.integration.annotation.Aggregator;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -41,10 +40,8 @@ public class TradeMatcherService {
                 ));
             }
         }
-
         return newTrade;
     }
-
 
     public static Predicate<StockEntity> typeCheck(String type) {
         return p -> p.getType().equals(type);

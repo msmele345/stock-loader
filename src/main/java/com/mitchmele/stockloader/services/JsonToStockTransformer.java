@@ -1,25 +1,28 @@
 package com.mitchmele.stockloader.services;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mitchmele.stockloader.common.ValidationError;
+import com.mitchmele.stockloader.common.ValidationErrorType;
+import com.mitchmele.stockloader.common.ValidationException;
 import com.mitchmele.stockloader.model.Ask;
 import com.mitchmele.stockloader.model.Bid;
 import com.mitchmele.stockloader.model.Stock;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
-import org.bouncycastle.util.StreamParsingException;
 import org.springframework.integration.transformer.AbstractTransformer;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
-import java.nio.charset.StandardCharsets;
+
 import java.util.Objects;
+
+import static com.mitchmele.stockloader.utils.ValidationErrorUtils.messageAsString;
 
 @Service
 @NoArgsConstructor
-public class StockTransformer extends AbstractTransformer {
+public class JsonToStockTransformer extends AbstractTransformer {
 
     @SneakyThrows
     @Override
@@ -42,20 +45,19 @@ public class StockTransformer extends AbstractTransformer {
             }
 
         } catch (JsonParseException e) {
-            throw new StreamParsingException("Unable To Parse Json", e);
+//            ValidationError error = new ValidationError(e.getCause().getMessage(), ValidationErrorType.DATA_INVALID, null);
+            throw new ValidationException(jsonParseError);
 
         } catch (JsonMappingException e) {
-            throw new Exception(prettyException(e.getLocalizedMessage()));
+            ValidationError error = new ValidationError(e.getCause().getMessage(), ValidationErrorType.DATA_INVALID, null);
+            throw new ValidationException(error);
         }
     }
-
-    public String messageAsString(Message<?> message) {
-        return message.getPayload() instanceof String
-                ? (String) message.getPayload()
-                : new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
+    //check
+    private ValidationError createJsonParseError(String field, Throwable cause) {
+        return new ValidationError("JSON-parse", ValidationErrorType.DATA_INVALID, cause);
     }
+    private final ValidationError jsonMappingError = new ValidationError("JSON-mapping", ValidationErrorType.DATA_INVALID, null);
+    private final ValidationError jsonParseError = new ValidationError("JSON-parse", ValidationErrorType.DATA_INVALID, null);
 
-    public String prettyException(String localizedMessage) {
-        return localizedMessage.split(" at")[0];
-    }
 }

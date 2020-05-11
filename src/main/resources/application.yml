@@ -1,7 +1,7 @@
 spring:
   cloud:
     stream:
-      default-binder: rabbit
+      defaultBinder: rabbit
       rabbit: #connection part
         binder:
           admin-addresses: localhost:5672
@@ -11,7 +11,7 @@ spring:
           binder: rabbit
           destination: stocks-exchange #topic or exchange
 
-        output:
+        expectedErrorsQueue:
           binder: rabbit
           destination: errors
 

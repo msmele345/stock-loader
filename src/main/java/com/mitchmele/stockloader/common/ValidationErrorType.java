@@ -1,6 +1,6 @@
 package com.mitchmele.stockloader.common;
 
-enum ValidationErrorType {
+public enum ValidationErrorType {
     DATA_INVALID,
     DATA_MISSING;
 }

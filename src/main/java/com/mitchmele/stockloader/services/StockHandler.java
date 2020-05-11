@@ -8,16 +8,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class StockHandler implements MessageHandler {
 
-    StockProcessor processor;
+    MongoStockEntityService mongoStockEntityService;
 
-    public StockHandler(StockProcessor processor) {
-        this.processor = processor;
+    public StockHandler(MongoStockEntityService mongoStockEntityService) {
+        this.mongoStockEntityService = mongoStockEntityService;
     }
 
     @Override
     public void handleMessage(Message<?> message) throws MessagingException {
         try {
-            processor.process(message);
+            mongoStockEntityService.process(message);
         } catch (Exception e) {
             throw new MessagingException(e.getLocalizedMessage());
         }

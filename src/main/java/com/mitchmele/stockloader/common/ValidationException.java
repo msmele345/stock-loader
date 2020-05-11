@@ -21,11 +21,9 @@ public class ValidationException extends RuntimeException {
     public ValidationException(String message) {
         this.message = message;
     }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
 }
-
-/*
-   1. List<String> names =
-         Arrays.asList("Grace Hopper", "Barbara Liskov", "Ada Lovelace","Karen Spärck Jones");
-
-   2.  String[] strings = {"abc", "dey"};
-*/
