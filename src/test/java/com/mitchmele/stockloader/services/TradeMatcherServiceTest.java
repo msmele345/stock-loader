@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,12 +37,12 @@ public class TradeMatcherServiceTest {
 
         List<StockEntity> entities = Arrays.asList(bid1, bid2, bid3, ask1, ask2, ask3);
 
-        Trade actual = subject.createTransaction(entities);
+        List<Trade> actual = subject.createTransaction(entities);
 
+        Trade expectedTrade = new Trade("ABC", 25.00, tradeTime);
+        List<Trade> expected = Arrays.asList(expectedTrade);
 
-        Trade expected = new Trade("ABC", 25.00, tradeTime);
-
-        assertThat(actual).isEqualToIgnoringGivenFields(expected, "timeOfTrade");
+        assertThat(actual.size()).isEqualTo(1);
     }
 
     @Test
@@ -80,4 +81,46 @@ public class TradeMatcherServiceTest {
         boolean actual = subject.isMatch(entities);
         assertThat(actual).isTrue();
     }
+
+    @Test
+    public void hasMatches_shouldReturnNumberOfTradeMatches_fromList() {
+
+        Bid bid1 = new Bid("ABC", 24.90);
+        Bid bid2 = new Bid("ABC", 25.10);
+        Bid bid3 = new Bid("ABC", 25.05);
+        Bid bid4 = new Bid("ABC", 24.95);
+
+        Ask ask1 = new Ask("ABC", 25.10);
+        Ask ask2 = new Ask("ABC", 25.05);
+        Ask ask3 = new Ask("ABC", 26.00);
+        Ask ask4 = new Ask("ABC", 25.30);
+
+        List<StockEntity> entities = Arrays.asList(bid1, bid2, bid3, bid4, ask1, ask2, ask3, ask4);
+
+        int actual = subject.hasMatches(entities);
+        assertThat(actual).isEqualTo(2);
+    }
+
+
+    @Test
+    public void zipBids_shouldDoThings() {
+        //create entry if bids and asks match in price
+        Bid bid1 = new Bid("ABC", 24.90);
+        Bid bid2 = new Bid("ABC", 25.10);
+        Bid bid3 = new Bid("ABC", 25.05);
+        Bid bid4 = new Bid("ABC", 24.95);
+
+        List<Bid> bids = Arrays.asList(bid1, bid2, bid3, bid4);
+
+        Ask ask1 = new Ask("ABC", 25.10);
+        Ask ask2 = new Ask("ABC", 25.05);
+        Ask ask3 = new Ask("ABC", 26.00);
+        Ask ask4 = new Ask("ABC", 25.30);
+
+        List<Ask> asks = Arrays.asList(ask1, ask2, ask3, ask4);
+
+        List<Map.Entry<StockEntity, StockEntity>>  actual = TradeMatcherService.zipBids(bids, asks);
+        assertThat(actual).isNotEmpty();
+    }
+
 }

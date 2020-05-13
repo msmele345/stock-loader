@@ -60,6 +60,7 @@ public class LoaderConfig {
             }
         };
     }
+                //what if two messages of same type get grouped? Need to prevent only bid/ask groups!!
 
 
     @Bean
@@ -118,7 +119,4 @@ public class LoaderConfig {
                 .handle(handler)
                 .get();
     }
-
-    //add logs to the errorAdvice when errors occur and are routed
-    //work on error parsing in the header
 }

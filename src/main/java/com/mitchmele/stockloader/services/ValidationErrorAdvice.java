@@ -15,7 +15,8 @@ import static com.mitchmele.stockloader.utils.ValidationErrorUtils.prettyExcepti
 
 @Service
 public class ValidationErrorAdvice extends AbstractRequestHandlerAdvice {
-
+    //Create methods for each type of exception
+    //Add more queues for each type for dynamic routing
     Logger logger = LoggerFactory.getLogger(ValidationErrorAdvice.class);
 
     MessagingTemplate messagingTemplate;
@@ -25,31 +26,42 @@ public class ValidationErrorAdvice extends AbstractRequestHandlerAdvice {
         this.messagingTemplate = messagingTemplate;
         this.expectedErrorsQueue = expectedErrorsQueue;
     }
-
-    //Do we need more information in the headers about what field failed? Create logging service pojo*
-    //can build out specific errorMessages to specific error queues later
     @Override
     protected Object doInvoke(ExecutionCallback callback, Object target, Message<?> message) {
         try {
             return callback.execute();
-        } catch (Exception ex) {
+        } catch (MessageTransformationException ex) {
             Throwable cause = ex.getCause();
-            if (cause instanceof MessageTransformationException) {
-                if (cause.getCause() instanceof ValidationException) {
-                    ValidationException nestedException = (ValidationException) cause.getCause();
-                    Message<?> errorMessage = MessageBuilder
-                            .withPayload(message.getPayload())
-                            .copyHeadersIfAbsent(message.getHeaders())
-                            .setHeader(" Errors: ", nestedException.getMessage())
-                            .build();
-                    logger.info("ERROR DETAILS: " + ex.getLocalizedMessage());
-                    messagingTemplate.send(expectedErrorsQueue, errorMessage);
-                }
-            } else {
+            if (cause instanceof ValidationException) {
+                Message<?> errorMessage = MessageBuilder
+                        .withPayload(message.getPayload())
+                        .copyHeadersIfAbsent(message.getHeaders())
+                        .setHeader("Errors ", cause.getMessage())
+                        .build();
+                messagingTemplate.send(expectedErrorsQueue, errorMessage);
+
+            } else { //build out other queues for other types of processing exceptions here later
                 Message<?> defaultErrorMessage = MessageBuilder
                         .withPayload(message.getPayload())
                         .copyHeadersIfAbsent(message.getHeaders())
                         .setHeader("Default Error Message: ", prettyException(ex.getLocalizedMessage()))
+                        .build();
+                messagingTemplate.send(expectedErrorsQueue, defaultErrorMessage);
+            }
+        } catch (Exception ex) {
+            if (ex.getCause() instanceof MessageTransformationException) {
+                Throwable validationCause = ex.getCause().getCause();
+                Message<?> errorMessage = MessageBuilder
+                        .withPayload(message.getPayload())
+                        .copyHeadersIfAbsent(message.getHeaders())
+                        .setHeader("Errors ", validationCause.getMessage())
+                        .build();
+                messagingTemplate.send(expectedErrorsQueue, errorMessage);
+            } else {
+                Message<?> defaultErrorMessage = MessageBuilder
+                        .withPayload(message.getPayload())
+                        .copyHeadersIfAbsent(message.getHeaders())
+                        .setHeader("Unknown Error ", ex.getLocalizedMessage())
                         .build();
                 messagingTemplate.send(expectedErrorsQueue, defaultErrorMessage);
             }

@@ -7,14 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.integration.aggregator.MessageGroupProcessor;
 import org.springframework.integration.store.MessageGroup;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
+//this is called after release strategy is satisfied
+//return list of trades or trade as custom message
 @Service
 public class AggregatorProcessor implements MessageGroupProcessor {
-    //need correlation strategy to be on symbol for this to work
-    //return list of trades as custom message
-    //pass entities to createTransaction method to create list of trades in message (to later be inserted to Mongo)
     Logger logger = LoggerFactory.getLogger(AggregatorProcessor.class);
 
     TradeMatcherService tradeMatcherService;
@@ -34,7 +34,6 @@ public class AggregatorProcessor implements MessageGroupProcessor {
                 .stream()
                 .map(message -> (StockEntity) message.getPayload())
                 .collect(Collectors.toList());
-
 
         Trade trade = tradeMatcherService.matchTrade(entities);
         if (trade != null) {
