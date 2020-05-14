@@ -6,9 +6,8 @@ public interface StockEntity {
     Double getPrice();
 }
 //Regular Track
+//Send large batches of bids and offers and change release strategy to what???? 10 to start?
 //Figure out how to manage re-sending bids/offers in groups that dont match in price.
-//Correlation strategy with symbol and price?
-//test on multiple messages with multiple same bids and offers
 
 //ERROR
 //DLQ and retries
