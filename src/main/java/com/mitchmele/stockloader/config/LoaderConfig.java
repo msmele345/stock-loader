@@ -54,14 +54,10 @@ public class LoaderConfig {
         return new CorrelationStrategy() {
             @Override
             public Object getCorrelationKey(Message<?> message) {
-                //get symbol to group by SYMBOL and bring in trade aggregator to check/insert trade?
-                //and price? TODO
                 return message.getHeaders().get("Symbol");
             }
         };
     }
-                //what if two messages of same type get grouped? Need to prevent only bid/ask groups!!
-
 
     @Bean
     IntegrationFlow transactionFlow(
