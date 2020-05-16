@@ -3,7 +3,9 @@ package com.mitchmele.stockloader.mongodb;
 import com.mitchmele.stockloader.model.Ask;
 import com.mitchmele.stockloader.model.Bid;
 import com.mitchmele.stockloader.model.Stock;
+import com.mitchmele.stockloader.model.Trade;
 import com.mongodb.MongoClient;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,11 +17,14 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = StockRepositoryTest.TestConfig.class)
@@ -45,12 +50,12 @@ class StockRepositoryTest {
 
     @BeforeEach
      void setUp() {
-//        stockRepository.deleteAll();
+        stockRepository.deleteAll();
     }
 
     @AfterEach
     void tearDown() {
-        stockRepository.deleteAll();
+//        stockRepository.deleteAll();
     }
 
     @Test
@@ -58,12 +63,25 @@ class StockRepositoryTest {
     }
 
     @Test
-    public void insert_success_shouldInsertStock() {
-        Stock inputStock = new Stock("ABC", 2.50, 2.75, 2.60);
+    public void insert_success_shouldInsertTrade() {
+        Trade inputStock = new Trade("ABC", 2.50, LocalDate.now());
 
-        Stock actual = stockRepository.insert(inputStock);
+        Trade actual = stockRepository.insert(inputStock);
 
         assertThat(actual).isEqualTo(inputStock);
+    }
+
+    @Test
+    public void insert_trades_shouldInsertListOfTrades() {
+        Trade inputStock = new Trade("ABC", 2.50, LocalDate.now());
+        Trade inputStock2 = new Trade("ABC", 2.75, LocalDate.now());
+        Trade inputStock3 = new Trade("ABC", 2.90, LocalDate.now());
+
+        List<StockEntity> inputTrades = Arrays.asList(inputStock, inputStock2, inputStock3);
+
+        List<StockEntity> actual = stockRepository.insert(inputTrades);
+        assertThat(actual).hasSize(3);
+        assertThat(actual).isEqualTo(inputTrades);
     }
 
     @Test
@@ -88,6 +106,7 @@ class StockRepositoryTest {
 
 //   Ask[] asks = {ask1, ask2, ask3};
     @Test
+    @Ignore("No requirement for this functionality yet")
     public void fetchBySymbol_success_shouldFetchAllRecordsBySymbol() {
         Bid bid1 = new Bid("TTY", 4.50);
         Bid bid2 = new Bid("VVB", 10.50);
@@ -105,9 +124,6 @@ class StockRepositoryTest {
         stockRepository.insert(asks);
 
         stockRepository.insert(new Ask("ASK", 80.00));
-
-//        org.springframework.data.mongodb.core.query.Query query = new Query();
-//        query.addCriteria(Criteria.where("symbol").is("QQW"));
 
         List<Bid> actual = stockRepository.findBySymbolIgnoreCase("TTY");
 

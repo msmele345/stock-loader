@@ -21,7 +21,7 @@ public class TradeMatcherService {
     public List<Trade> createTransactions(List<StockEntity> entities) {
         //input entities are bids/offers of different prices
         List<StockEntity> potentialTrades = entities.stream()
-                //create Map<Double, List<StockEntity>> with groupBy
+                //create Map<Double, List<StockEntity>> with groupBy price
                 .collect(Collectors.groupingBy(StockEntity::getPrice))
                 //iterate over each map entry
                 .entrySet().stream()

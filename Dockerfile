@@ -7,3 +7,4 @@ RUN rabbitmq-plugins enable --offline rabbitmq_shovel && rabbitmq-plugins enable
 #COPY ./rabbmitmq.config /usr/local/etc/rabbit/rabbit.config
 
 
+#docker build . -f Dockerfile

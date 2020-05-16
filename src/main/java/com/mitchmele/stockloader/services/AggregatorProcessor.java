@@ -37,9 +37,24 @@ public class AggregatorProcessor implements MessageGroupProcessor {
 
         Trade trade = tradeMatcherService.matchTrade(entities);
         if (trade != null) {
-            logger.info("TRADE MADE: " + trade.toString());
+            logger.info("TRADES MADE: " + trade.toString());
             return trade;
         }
         return null;
     };
 }
+//cay @ 155.90
+//HUD 25.50
+//abc 2.75
+//uso
+
+
+/*
+*         List<Trade> trades = tradeMatcherService.matchTrades(entities);
+        if (trades != null && !trades.isEmpty()) {
+            logger.info("TRADES MADE: " + trades.toString());
+            return trades;
+        }
+        return null;
+*
+* */

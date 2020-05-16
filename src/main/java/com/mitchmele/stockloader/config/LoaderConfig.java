@@ -15,6 +15,7 @@ import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.core.MessagingTemplate;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.handler.LoggingHandler;
 import org.springframework.integration.store.MessageGroup;
 import org.springframework.messaging.Message;
 
@@ -75,6 +76,7 @@ public class LoaderConfig {
                                 .releaseStrategy(releaseStrategy())
                                 .correlationStrategy(correlationStrategy())
                 )
+                .log(LoggingHandler.Level.INFO, "MADE IT PAST PROCESSOR")
                 .channel("tradeProcessing")
                 .get();
     }

@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.mitchmele.stockloader.utils.ValidationErrorUtils.prettyException;
 
 @Service
 public class MongoClient {
@@ -28,13 +32,24 @@ public class MongoClient {
         }
     }
 
+    public List<StockEntity> insertTrades(List<StockEntity> inputTrades) throws IOException {
+        try {
+            return stockRepository.insert(inputTrades);
+        } catch (Exception e) {
+            String msg = String.format("Inserting TRADES threw an exception on insert with message: %s", e.getLocalizedMessage());
+            logger.info(msg);
+            throw new IOException(msg);
+        }
+    }
+
     private void logEntitySuccess(StockEntity entity) {
         String type = getTypePretty(entity.getType());
         String msg = String.format("Stock Entity Type: %s with Symbol: %S has been successfully written to Mongo", type, entity.getSymbol());
         logger.info(msg);
     }
 
-    protected String getTypePretty(String inputString) {
-        return inputString.substring(inputString.length() - 5);
+    protected static String getTypePretty(String inputString) {
+        return inputString.substring(inputString.length() - 3);
     }
+
 }

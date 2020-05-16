@@ -9,10 +9,5 @@ import java.util.List;
 
 @Repository
 public interface StockRepository extends MongoRepository<StockEntity, String> {
-
     List<Bid> findBySymbolIgnoreCase(String symbol);
-    Iterable<StockEntity> findStockEntitiesBySymbolIgnoreCase(String symbol);
 }
-
-//fetch all bids and asks then compare with a service?
-//

@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,9 +42,9 @@ class MongoClientTest {
     public void insertBid_failure_shouldThrowIOException() throws IOException {
         when(mockRepo.insert((StockEntity) any())).thenThrow(new RuntimeException("bad news"));
 
-        assertThatThrownBy(() -> subject.insertEntity(new Bid()))
+        assertThatThrownBy(() -> subject.insertEntity(new Bid("ABC", 25.00)))
                 .isInstanceOf(IOException.class)
-                .hasMessage("Entity: Bid(type=null, symbol=null, bidPrice=null) threw an exception on insert with message: bad news");
+                .hasMessage("Entity: Bid(type=BID, symbol=ABC, bidPrice=25.0, ENTITY_TYPE=BID) threw an exception on insert with message: bad news");
     }
 
     @Test
@@ -71,9 +73,52 @@ class MongoClientTest {
     public void insertAsk_failure_shouldThrowIOExceptionIfInsertFails() {
         when(mockRepo.insert((StockEntity) any())).thenThrow(new RuntimeException("bad news"));
 
-        assertThatThrownBy(() -> subject.insertEntity(new Ask()))
+        assertThatThrownBy(() -> subject.insertEntity(new Ask("ABC", 4.75)))
                 .isInstanceOf(IOException.class)
-                .hasMessage("Ask: Ask(type=null, symbol=null, askPrice=null, ENTITY_TYPE=ASK) has an exception on insert with message: bad news");
+                .hasMessage("Entity: Ask(type=ASK, symbol=ABC, askPrice=4.75, ENTITY_TYPE=ASK) threw an exception on insert with message: bad news");
+    }
+
+    @Test
+    public void insertTrades_success_shouldCallRepoInsertAll() throws IOException {
+        Trade inputStock = new Trade("ABC", 2.50, LocalDate.now());
+        Trade inputStock2 = new Trade("ABC", 2.75, LocalDate.now());
+        Trade inputStock3 = new Trade("ABC", 2.90, LocalDate.now());
+
+        List<StockEntity> inputTrades = Arrays.asList(inputStock, inputStock2, inputStock3);
+
+        subject.insertTrades(inputTrades);
+
+        verify(mockRepo).insert(anyIterable());
+    }
+
+    @Test
+    public void insertTrades_success_shouldReturnInsertedTrades() throws IOException {
+        Trade inputStock = new Trade("ABC", 2.50, LocalDate.now());
+        Trade inputStock2 = new Trade("ABC", 2.75, LocalDate.now());
+        Trade inputStock3 = new Trade("ABC", 2.90, LocalDate.now());
+
+        List<StockEntity> inputTrades = Arrays.asList(inputStock, inputStock2, inputStock3);
+
+        when(mockRepo.insert(anyIterable())).thenReturn(inputTrades);
+
+        List<StockEntity> actual = subject.insertTrades(inputTrades);
+
+        assertThat(actual).isEqualTo(inputTrades);
+    }
+
+    @Test
+    public void insertTrades_failure_shouldThrowIOException_whenRepoInsertErrors() {
+        Trade inputStock = new Trade("ABC", 2.50, LocalDate.now());
+        Trade inputStock2 = new Trade("ABC", 2.75, LocalDate.now());
+        Trade inputStock3 = new Trade("ABC", 2.90, LocalDate.now());
+
+        List<StockEntity> inputTrades = Arrays.asList(inputStock, inputStock2, inputStock3);
+
+        when(mockRepo.insert(anyIterable())).thenThrow(new RuntimeException("bad news bears"));
+
+        assertThatThrownBy(() -> subject.insertTrades(inputTrades))
+                .isInstanceOf(IOException.class)
+                .hasMessage("Trades for Symbol: ABC threw an exception on insert with message: bad news bears");
     }
 
     @Test

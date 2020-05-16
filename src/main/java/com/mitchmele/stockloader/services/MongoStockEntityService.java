@@ -8,6 +8,7 @@ import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class MongoStockEntityService {
@@ -20,12 +21,22 @@ public class MongoStockEntityService {
         this.mongoClient = mongoClient;
     }
 
-    public void process(Message<?> message) throws IOException {
-        logger.info("MONGO_ENTITY_SERVICE RECEIVED MESSAGE WITH PAYLOAD: " + message.getPayload());
+    public void processSingleEntity(Message<?> message) throws IOException {
+        logger.info("MONGO_ENTITY_SERVICE RECEIVED MESSAGE SINGLE TRADE: " + message.getPayload());
 
         try {
             StockEntity payload = (StockEntity) message.getPayload();
             mongoClient.insertEntity(payload);
+        } catch (Exception e) {
+            throw new IOException(e.getMessage());
+        }
+    }
+
+    public void processTrades(Message<?> message) throws IOException {
+        logger.info("MONGO_ENTITY_SERVICE RECEIVED MESSAGE WITH TRADES: " + message.getPayload());
+        try {
+            List<StockEntity> payload = (List<StockEntity>) message.getPayload();
+            mongoClient.insertTrades(payload);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }

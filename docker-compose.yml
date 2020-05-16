@@ -47,7 +47,7 @@ services:
     container_name: rabbit-1
     hostname: rabbit1.vnet
     build:
-      dockerfile: ../../../../../../../Dockerfile
+      dockerfile: ./
       context: ./
     image: rabbitmq:3.5.3-management
     ports:

@@ -25,6 +25,11 @@ public class Bid implements StockEntity {
         this.bidPrice = bidPrice;
     }
 
+    @Override
+    public String getSymbol() {
+        return symbol;
+    }
+
     public String getType() {
         return ENTITY_TYPE;
     }
